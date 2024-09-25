@@ -1,0 +1,182 @@
+---
+title: "Park Washroom Facilities"
+subtitle: "Is the distribution of Park Washroom Facilities in the City of Toronto even?"
+author: 
+  - Haoan Wang
+date: September 24 2024
+thanks: "Code and data are available at: https://github.com/s1lentw/paper1"
+date-format: long
+abstract: "This paper examines public washroom facilities managed by the City of Toronto’s Parks, Forestry, and Recreation (PFR) division. Using data from the City of Toronto’s Asset Management System, it analyzes the availability of washrooms in parks, portable toilets, and facilities inside community centers, schools, and other recreational buildings. Only washrooms open for public use are considered, excluding private or staff-only facilities. The analysis is based on data validated by on-site parks supervisors and inter-divisional staff, providing a comprehensive overview of public washroom access in Toronto's parks and recreation system."
+format: pdf
+number-sections: true
+bibliography: references.bib
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+library(opendatatoronto)
+library(knitr)
+library(readr)
+```
+
+# Introduction
+Public washroom facilities are an essential form of social infrastructure in urban environments. They serve a range of purposes, from providing accessible sanitation for park visitors to supporting recreational activities and promoting public health. More importantly, they are available for free to all members of the public, making them a vital service for individuals of diverse backgrounds, including those experiencing homelessness or transient visitors. These facilities are not just practical necessities, but also act as inclusive spaces that promote equity and accessibility in public areas. In a city where many services are privatized or commodified, public washroom facilities remain a key component of social welfare.
+
+The City of Toronto’s Parks, Forestry, and Recreation (PFR) division manages these washroom facilities across the city’s parks and recreational spaces. With facilities ranging from permanent washroom buildings to portable toilets, they are located in parks, community centers, and sports complexes, ensuring that both residents and visitors have access to essential services. Additionally, these washrooms are placed strategically across Toronto’s vast park system to meet the needs of different communities. However, the distribution of these facilities may vary depending on the neighborhood, park usage, and the city's development priorities, raising questions about equitable access to these vital resources.
+
+This paper aims to assess the distribution of public washroom facilities across Toronto’s parks, focusing on their availability in the city’s 25 wards. The analysis will explore the number of washroom facilities in each ward, their types (permanent vs. portable), and the accessibility for diverse populations. The findings will highlight whether certain areas of the city are underserved in terms of public washroom access and suggest where future facilities might be needed or existing ones expanded. Future research could also investigate demographic factors, such as income levels, to determine if washroom facilities are disproportionately located in lower- or higher-income neighborhoods, helping to ensure equitable access to public infrastructure.
+
+# Data
+
+## Data tools
+The data utilized in this study was obtained from the OpenData Toronto portal via the opendatatoronto library (Gelfand 2022). Data cleaning and analysis were performed using the open-source statistical programming language R (R Core Team 2023). The libraries tidyverse (Wickham et al. 2019), janitor (Firke 2023), knitr (Xie 2022), dplyr (Wickham et al. 2023), and lubridate (Grolemund and Wickham 2011) were employed for simulation, cleaning, and testing. Visualizations were created using ggplot2 (Wickham 2016).
+
+## Overview of Dataset
+The selected dataset was operated by the City of Toronto Parks, Forestry and Recreation (PFR) division. In the dataset we contains the washroom facilities like: washroom buildings in parks; portable toilets in parks; or washrooms located inside community centres, schools, pool buildings, rink buildings, fieldhouses and clubhouses. Only washrooms open for public use have been identified in this dataset. This dataset does not include washrooms that may be private or used by members/staff only. The chosen variables of analysis were the Location, The details of the location, Type of the washroom, Accessible, and the status of this washrooms.(0 = closed 1 = open 2 = service alert) See `Table 1` for an overview of the data.
+```{r}
+#| label: Washroom location
+#| fig-cap: "Table 1: Sample of Toronto Park Washroom Facilities"
+#| echo: false
+data <- read_csv("analysis_data.csv")
+selected_columns <- data %>% select(location, location_details, type, accessible, hours, Status)
+knitr::kable(head(selected_columns), "simple", 
+             col.names = c('Location', 'Location Details', 'Type', 'Accessible', 'Hours', 'Status'))
+```
+The most interesting data to study in the entire database are these six sets. Through this data, we aim to research and discuss the distribution of toilets, the usage time of toilets, and their current status.
+
+
+
+```{r}
+#| label: Washroom-Types count
+#| fig-cap: "Table 2: Sample of Count of Washrooms by Types"
+#| echo: false
+asset_type_count <- data %>%
+  group_by(type) %>%
+  summarise(count = n())
+print(asset_type_count)
+```
+
+Talk way more about it. 
+
+
+
+# Model
+
+The goal of our modelling strategy is twofold. Firstly,...
+
+Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
+
+## Model set-up
+
+Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
+
+\begin{align} 
+y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
+\mu_i &= \alpha + \beta_i + \gamma_i\\
+\alpha &\sim \mbox{Normal}(0, 2.5) \\
+\beta &\sim \mbox{Normal}(0, 2.5) \\
+\gamma &\sim \mbox{Normal}(0, 2.5) \\
+\sigma &\sim \mbox{Exponential}(1)
+\end{align}
+
+We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
+
+
+### Model justification
+
+We expect a positive relationship between the size of the wings and time spent aloft. In particular...
+
+We can use maths by including latex between dollar signs, for instance $\theta$.
+
+
+# Results
+
+Our results are summarized in @tbl-modelresults.
+
+```{r}
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+library(rstanarm)
+
+```
+
+```{r}
+#| echo: false
+#| eval: true
+#| label: tbl-modelresults
+#| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
+#| warning: false
+
+```
+
+
+
+
+# Discussion
+
+## First discussion point {#sec-first-point}
+
+If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+
+## Second discussion point
+
+## Third discussion point
+
+## Weaknesses and next steps
+
+Weaknesses and next steps should also be included.
+
+\newpage
+
+\appendix
+
+# Appendix {-}
+
+
+# Additional data details
+
+# Model details {#sec-model-details}
+
+## Posterior predictive check
+
+In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
+
+In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
+
+```{r}
+#| eval: true
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-ppcheckandposteriorvsprior
+#| layout-ncol: 2
+#| fig-cap: "Examining how the model fits, and is affected by, the data"
+#| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
+
+```
+
+## Diagnostics
+
+@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
+
+@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
+
+```{r}
+
+```
+
+
+
+\newpage
+
+
+# References
+
+
