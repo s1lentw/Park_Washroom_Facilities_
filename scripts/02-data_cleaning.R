@@ -1,11 +1,10 @@
 #### Preamble ####
-# Purpose: Cleans the raw plane data recorded by two observers..... [...UPDATE THIS...]
+# Purpose: Cleans the raw plane data recorded by two observers
 # Author: Haoan Wang
 # Date: September 24 2024
 # Contact: haoanmartin.wang@mail.utoronto.ca
 # License: MIT
-# Pre-requisites: [...UPDATE THIS...]
-# Any other information needed? [...UPDATE THIS...]
+# Pre-requisites: After download the data
 
 #### Workspace setup ####
 library(tidyverse)

@@ -6,21 +6,18 @@ author:
 date: September 24 2024
 thanks: "Code and data are available at: https://github.com/s1lentw/paper1"
 date-format: long
-abstract: "This paper examines public washroom facilities managed by the City of Toronto’s Parks, Forestry, and Recreation (PFR) division. Using data from the City of Toronto’s Asset Management System, it analyzes the availability of washrooms in parks, portable toilets, and facilities inside community centers, schools, and other recreational buildings. Only washrooms open for public use are considered, excluding private or staff-only facilities. The analysis is based on data validated by on-site parks supervisors and inter-divisional staff, providing a comprehensive overview of public washroom access in Toronto's parks and recreation system."
+abstract: "This paper investigates the distribution and accessibility of public washroom facilities in Toronto, highlighting their significant role in urban planning. Our analysis reveals disparities in access, with certain neighborhoods lacking sufficient facilities. This finding underscores the need for improved infrastructure to support public health and inclusivity in urban environments. By addressing these gaps, we can enhance the overall quality of life for residents and visitors, making cities more accommodating for all."
 format: pdf
 number-sections: true
 bibliography: references.bib
 ---
 
 ```{r}
-library(tidyverse)
 library(ggplot2)
-library(dplyr)
 library(readr)
-library(janitor)
 library(opendatatoronto)
 library(knitr)
-library(readr)
+library(conflicted)
 ```
 
 # Introduction
@@ -41,142 +38,113 @@ The selected dataset was operated by the City of Toronto Parks, Forestry and Rec
 #| label: Washroom location
 #| fig-cap: "Table 1: Sample of Toronto Park Washroom Facilities"
 #| echo: false
-data <- read_csv("analysis_data.csv")
-selected_columns <- data %>% select(location, location_details, type, accessible, hours, Status)
+library(tidyverse)
+data <- read_csv("analysis_data.csv",
+                 col_types = cols(
+                   location = col_character(),
+                   type = col_character(),
+                   accessible = col_character(),
+                   hours = col_character(),
+                   Status = col_double(),
+                   geometry = col_character()
+                 ))
+data <- data %>%
+  mutate(Status = case_when(
+    Status == 0 ~ "closed",
+    Status == 1 ~ "open",
+    Status == 2 ~ "service alert",
+    TRUE ~ as.character(Status)
+  ))
+
+selected_columns <- data %>% select(location, type, accessible, hours, Status)
 knitr::kable(head(selected_columns), "simple", 
-             col.names = c('Location', 'Location Details', 'Type', 'Accessible', 'Hours', 'Status'))
+             col.names = c('Location', 'Type', 'Accessible', 'Hours', 'Status'))
 ```
-The most interesting data to study in the entire database are these six sets. Through this data, we aim to research and discuss the distribution of toilets, the usage time of toilets, and their current status.
+In the table I save the original column name. And I change the data in the Status column to make it more readable and more intuitive. In the original column of Status, the data showsby 0,1,2, which 0 means the facilities is currently closed, 1 shows it is currently avaible and open to public, 2 shows it has service alert. which I change the original data in to 0 = closed, 1 = open, 2 = service alert.
 
+## Total count of Washroom Facilities
+```{r}
+#| label: Total count of Washroom Facilities
+#| fig-cap: "Table 2: Total count of Washroom Facilities"
+#| echo: false
+total_count <- nrow(data)
+count_table <- data.frame(
+  Total_Count = total_count
+)
+kable(count_table, caption = "Total Count of Washroom Facilities")
+```
+In the table 2, we use the row of the data to count the total count of washroom facilities in Toronto area.
 
-
+## The total count of two types washrooms in Toronto
 ```{r}
 #| label: Washroom-Types count
-#| fig-cap: "Table 2: Sample of Count of Washrooms by Types"
+#| fig-cap: "Table 3: Sample of Count of Washrooms by Types"
 #| echo: false
 asset_type_count <- data %>%
   group_by(type) %>%
   summarise(count = n())
-print(asset_type_count)
+kable(asset_type_count, caption = "Count of Asset Types")
 ```
 
-Talk way more about it. 
+ The total number of portable toilets and washroom buildings is calculated and presented in tabular form.
 
-
-
-# Model
-
-The goal of our modelling strategy is twofold. Firstly,...
-
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
-
-## Model set-up
-
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
-
-\begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
-\sigma &\sim \mbox{Exponential}(1)
-\end{align}
-
-We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
-
-
-### Model justification
-
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
-
-We can use maths by including latex between dollar signs, for instance $\theta$.
-
-
-# Results
-
-Our results are summarized in @tbl-modelresults.
+## The Distribution of Toronto Washroom Facilities Status.
 
 ```{r}
+#| label: The distribution of Washroom Facilities Status
+#| fig-cap: "The Distribution of Toronto Washroom Facilities Status."
 #| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-library(rstanarm)
-
+data$Status <- as.factor(data$Status)
+ggplot(data, aes(x = Status, fill = Status)) +
+  geom_bar() +
+  scale_fill_manual(values = c("grey", "green", "red")) +  # Assign colors for each status
+  labs(title = "Distribution of Status", x = "Status", y = "Count") +
+  theme_minimal()
 ```
+Integrate the three sets of data in the data and use histogram to more intuitively reflect the differences between the three sets of data.
 
+## The Opening Hours Distribution
 ```{r}
+#| label: The opening hours distribution of the Washroom Facilities
+#| fig-cap: "Hours Distribution"
 #| echo: false
-#| eval: true
-#| label: tbl-modelresults
-#| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
-#| warning: false
+conflicts_prefer(dplyr::filter)
+hours_summary <- data %>%
+  filter(hours != "none") %>%
+  group_by(hours) %>%
+  summarise(count = n())
 
+ggplot(hours_summary, aes(x = reorder(hours, count), y = count, fill = hours)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Hours Distribution", x = "Hours", y = "Count") +
+  theme_minimal() +
+  coord_flip()
 ```
-
-
-
 
 # Discussion
 
-## First discussion point {#sec-first-point}
+## Discussion based on table 2
+In downtown Toronto, the presence of 418 public restrooms plays a crucial role in supporting the needs of residents and tourists alike. While this number may seem adequate, demand can spike during busy periods or events, potentially leading to long wait times or overcrowding. Access to clean and well-maintained facilities is vital for public health and encourages more outdoor activities. To enhance community satisfaction, it’s essential for city officials to regularly review restroom locations and their accessibility, ensuring they cater effectively to diverse populations.
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+## Discussion based on table 3
+The data on Toronto's park washroom facilities, with 74 portable toilets and 344 washroom buildings, reflects broader societal needs for sanitation in public spaces. Adequate restroom facilities are essential for promoting public health, especially in urban parks where families and individuals gather. The predominance of washroom buildings suggests an emphasis on providing comprehensive amenities, yet the relatively low number of portable toilets could indicate a need for additional resources during peak usage times or events. Ensuring access to sanitation facilities enhances community well-being and encourages outdoor activities, contributing to healthier lifestyles.
 
-## Second discussion point
+## Discussion based on figure 1
+Currently, Toronto parks have a significant number of washroom facilities that are operational, enhancing the overall visitor experience. With only a small percentage closed or under service alert, the city demonstrates its commitment to public health and convenience. This accessibility is especially vital during busy seasons when parks see increased foot traffic. Regular maintenance and prompt attention to closed facilities will ensure cleanliness and comfort for users. We can see this in Figure 1, the green part is weight higher than the grey and red part, which shows the city's maintenance on the washroom facilities is doing well.
 
-## Third discussion point
-
-## Weaknesses and next steps
-
-Weaknesses and next steps should also be included.
-
-\newpage
-
-\appendix
-
-# Appendix {-}
-
-
-# Additional data details
-
-# Model details {#sec-model-details}
-
-## Posterior predictive check
-
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
-
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
-
-```{r}
-#| eval: true
-#| echo: false
-#| message: false
-#| warning: false
-#| label: fig-ppcheckandposteriorvsprior
-#| layout-ncol: 2
-#| fig-cap: "Examining how the model fits, and is affected by, the data"
-#| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
-
-```
-
-## Diagnostics
-
-@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
-
-@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
-
-```{r}
-
-```
-
-
+## Discussion based on figure 2
+The most common operating hours for park washroom facilities in Toronto are between 9 AM and 10 PM. These hours align well with peak park usage times, accommodating morning visitors and those enjoying evening strolls. However, it's essential to assess whether these hours meet the needs of all community members, including those who may use parks at different times. Expanding operating hours during the summer months or for special events could enhance accessibility and overall visitor satisfaction. This balanced approach can support the well-being of the community while maintaining public health standards.
 
 \newpage
 
 
 # References
+R Core Team. (2024). R: A language and environment for statistical computing. R Foundation for Statistical Computing. Retrieved from https://www.r-project.org
+City of Toronto. (n.d.). Washroom Facilities Dataset. Open Data Toronto. Retrieved from https://open.toronto.ca/dataset/washroom-facilities/
+Wickham, H. (2016). ggplot2: Elegant Graphics for Data Analysis. Springer. Available at: ggplot
+Wickham, H. (2019). readr: Read Rectangular Text Data. Available at: readr
+Toronto Open Data. (n.d.). Open Data Toronto Package. Available at: Open Data Toronto
+Yihui Xie (2021). knitr: A General-Purpose Package for Dynamic Report Generation in R. Available at: knitr
+Wikipedia contributors. (n.d.). Toronto. In Wikipedia, The Free Encyclopedia. Retrieved [date you accessed the page], from https://zh.wikipedia.org/wiki/多伦多
 
 
