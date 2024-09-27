@@ -146,5 +146,5 @@ Wickham, H. (2019). readr: Read Rectangular Text Data. Available at: readr
 Toronto Open Data. (n.d.). Open Data Toronto Package. Available at: Open Data Toronto
 Yihui Xie (2021). knitr: A General-Purpose Package for Dynamic Report Generation in R. Available at: knitr
 Wikipedia contributors. (n.d.). Toronto. In Wikipedia, The Free Encyclopedia. Retrieved [date you accessed the page], from https://zh.wikipedia.org/wiki/多伦多
-
+OpenAI. (2024). ChatGPT: A large language model. Retrieved from https://www.openai.com/chatgpt
 
